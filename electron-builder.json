@@ -1,0 +1,15 @@
+{
+  "appId": "com.toothsketch.desktop",
+  "files": ["dist-react", "dist-electron"],
+  "icon": "./desktopIcon.png",
+  "mac": {
+    "target": "dmg"
+  },
+  "win": {
+    "target": ["portable", "msi"]
+  },
+  "linux": {
+    "target": "AppImage",
+    "category": "Utility"
+  }
+}
