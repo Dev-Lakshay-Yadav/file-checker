@@ -28,20 +28,17 @@ app.on("ready", () => {
   // helloWorld
   ipcMain.handle("helloWorld", () => helloWorld());
 
-
   ipcMain.handle("parse-pdf", async (_event, fileBuffer: ArrayBuffer) => {
     try {
       // Convert ArrayBuffer to Node Buffer
       const buffer = Buffer.from(fileBuffer);
-  
+
       // Pass the buffer directly to pdf parsing
       const data = await extractPDFData(buffer);
-  
+
       return { success: true, data };
     } catch (err) {
       return { success: false, error: (err as Error).message };
     }
   });
-  
-
 });

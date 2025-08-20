@@ -1,6 +1,11 @@
 import pdfParse from "pdf-parse";
-import type { PDFResult } from "../../shared/types.js";
 
+interface PDFResult {
+  file_Prefix: string | null;
+  service_Type: "Crown And Bridge" | "Implant" | "Smile Design" | null;
+  tooth_Numbers: number[];
+  additional_Notes: string | null;
+}
 /**
  * Read PDF and return full text from Buffer
  */
@@ -18,11 +23,13 @@ export async function readPDF(fileBuffer: Buffer): Promise<string> {
  * Extract file prefix (between TS- and Case Priority)
  */
 function extractFilePrefix(text: string): string | null {
-  const regex = /TS-(.*?)Case Priority/i;
+  const regex = /TS-([\s\S]*?)Case Priority/i; // [\s\S] matches any char including newlines
   const match = text.match(regex);
-  return match ? match[1].trim() : null;
-}
+  if (!match) return null;
 
+  // Replace all line breaks and multiple spaces with a single space
+  return match[1].replace(/\s+/g, " ").trim();
+}
 /**
  * Extract service type (3 possible types)
  */
