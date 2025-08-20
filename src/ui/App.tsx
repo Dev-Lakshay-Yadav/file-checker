@@ -1,22 +1,14 @@
-import { useEffect, useState } from "react"
+// App.tsx
+import FolderViewer from "./components/FolderViewer";
+// import PDFReader from "./components/PDFReader";
 
 const App = () => {
-  const [msg, setMsg] = useState("")
-
-  useEffect(() => {
-    // Call the Electron main process function
-    window.api.helloWorld().then((res) => {
-      console.log("From main:", res)
-      setMsg(res)
-    })
-  }, [])
-
   return (
-    <div className="bg-red-500 text-blue-500 p-4">
-      <h1>App dev</h1>
-      <p>Message from main: {msg}</p>
+    <div className="p-4 max-w-4xl mx-auto space-y-6">
+      <FolderViewer />
+      {/* <PDFReader /> */}
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
