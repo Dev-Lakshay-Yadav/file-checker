@@ -22,3 +22,28 @@ export async function openFolder() {
 
   return { path: folderPath, files };
 }
+
+
+
+// preload
+// openFolder: () => ipcRenderer.invoke("open-folder"),
+
+
+
+// // main
+// import { openFolder as folderService } from "./services/fileService.js";
+// ipcMain.handle("open-folder", async () => {
+//   try {
+//     const result = await folderService();
+//     if (!result) {
+//       return { success: false, error: "Folder selection canceled" };
+//     }
+//     return { success: true, folder: result.path, files: result.files };
+//   } catch (error) {
+//     console.error("Folder open error:", error);
+//     return {
+//       success: false,
+//       error: error instanceof Error ? error.message : "Unknown error",
+//     };
+//   }
+// });

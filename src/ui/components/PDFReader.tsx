@@ -1,74 +1,116 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
-interface PDFResult {
-  case_Id: string;
-  patient_Name: string;
-  tooth_Numbers: string[];
-  additional_Notes: string;
+declare global {
+  interface Window {
+    electronAPI: {
+      parsePDF: (
+        fileBuffer: ArrayBuffer
+      ) => Promise<{ success: boolean; data?: any; error?: string }>;
+    };
+  }
 }
 
-const PDFReader = () => {
-  const [extractedData, setExtractedData] = useState<PDFResult | null>(null);
-  const [dragOver, setDragOver] = useState(false);
+const PDFReader: React.FC = () => {
+  const [pdfData, setPdfData] = useState<any>(null);
+  const [error, setError] = useState("");
+  const [fileName, setFileName] = useState<File | null>(null);
 
-  // Dummy data simulation after dropping a file
-  const simulatePDFParsing = (fileName: string) => {
-    const dummyData: PDFResult = {
-      case_Id: "CASE-12345",
-      patient_Name: "John Doe",
-      tooth_Numbers: ["11", "12", "21", "22"],
-      additional_Notes: `Extracted from ${fileName}`,
-    };
-    setExtractedData(dummyData);
-  };
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setError("");
+    setPdfData(null);
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setDragOver(false);
+    const file = event.target.files?.[0];
+    if (!file) {
+      setError("No file selected.");
+      return;
+    }
 
-    const file = e.dataTransfer.files[0];
-    if (file && file.type === "application/pdf") {
-      simulatePDFParsing(file.name);
-    } else {
-      alert("Please upload a valid PDF file.");
+    if (!file.name.endsWith(".pdf")) {
+      setError("Only PDF files are allowed.");
+      return;
+    }
+
+    setFileName(file);
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await window.electronAPI.parsePDF(arrayBuffer);
+
+      if (result.success && result.data) {
+        setPdfData(result.data);
+      } else {
+        setError(result.error || "Failed to parse PDF");
+      }
+    } catch (err) {
+      setError((err as Error).message);
     }
   };
 
-  return (
-    <div className="p-4">
-      {/* Drag & Drop Area */}
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
-        className={`w-full h-40 flex items-center justify-center border-2 border-dashed rounded-lg cursor-pointer transition ${
-          dragOver ? "bg-blue-100 border-blue-500" : "bg-gray-50 border-gray-300"
-        }`}
-      >
-        <p className="text-gray-600">
-          {dragOver ? "Drop PDF here..." : "Drag & Drop a PDF file here"}
-        </p>
-      </div>
+  const handleReset = () => {
+    setPdfData(null);
+    setError("");
+    setFileName(null);
+  };
 
-      {/* Render Extracted Data */}
-      {extractedData && (
-        <div className="mt-6 p-4 border rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-2">Extracted Data:</h3>
-          <p>
-            <strong>Case ID:</strong> {extractedData.case_Id}
-          </p>
-          <p>
-            <strong>Patient Name:</strong> {extractedData.patient_Name}
-          </p>
-          <p>
-            <strong>Tooth Numbers:</strong> {extractedData.tooth_Numbers.join(", ")}
-          </p>
-          <p>
-            <strong>Additional Notes:</strong> {extractedData.additional_Notes}
-          </p>
+  return (
+    <div className="w-full h-full flex flex-col items-center relative p-4">
+      {/* Reset button in top-right */}
+      <button
+        onClick={handleReset}
+        className="absolute top-4 right-4 px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+      >
+        Reset
+      </button>
+
+      <h3 className="text-xl font-semibold mb-6">PDF Reader</h3>
+
+      {/* Select PDF button */}
+      {!pdfData && (
+        <>
+          <input
+            type="file"
+            accept=".pdf"
+            id="fileInput"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <label
+            htmlFor="fileInput"
+            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-700 transition text-lg"
+          >
+            Select PDF
+          </label>
+          {fileName && (
+            <p className="text-sm mt-2">
+              File: <strong>{fileName.name}</strong>
+            </p>
+          )}
+          {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+        </>
+      )}
+
+      {/* Display parsed PDF data */}
+      {/* Display parsed PDF data */}
+      {pdfData && (
+        <div className="w-full max-w-lg mt-4 space-y-2">
+          <div className="flex justify-between border-b pb-1">
+            <span className="font-semibold">File Prefix:</span>
+            <span>{pdfData.file_Prefix || "N/A"}</span>
+          </div>
+          <div className="flex justify-between border-b pb-1">
+            <span className="font-semibold">Service Type:</span>
+            <span>{pdfData.service_Type || "N/A"}</span>
+          </div>
+          <div className="flex justify-between border-b pb-1">
+            <span className="font-semibold">Tooth Numbers:</span>
+            <span>{pdfData.tooth_Numbers?.join(", ") || "N/A"}</span>
+          </div>
+          <div className="flex justify-between border-b pb-1">
+            <span className="font-semibold">Additional Notes:</span>
+            <span>{pdfData.additional_Notes || "N/A"}</span>
+          </div>
         </div>
       )}
     </div>
