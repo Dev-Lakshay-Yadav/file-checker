@@ -6,9 +6,9 @@ interface PDFResult {
   tooth_Numbers: number[];
   additional_Notes: string | null;
 }
-/**
- * Read PDF and return full text from Buffer
- */
+
+// Read PDF and return full text from Buffer
+
 export async function readPDF(fileBuffer: Buffer): Promise<string> {
   try {
     const pdfData = await pdfParse(fileBuffer);
@@ -19,9 +19,8 @@ export async function readPDF(fileBuffer: Buffer): Promise<string> {
   }
 }
 
-/**
- * Extract file prefix (between TS- and Case Priority)
- */
+// Extract file prefix (between TS- and Case Priority)
+
 function extractFilePrefix(text: string): string | null {
   const regex = /TS-([\s\S]*?)Case Priority/i; // [\s\S] matches any char including newlines
   const match = text.match(regex);
@@ -30,9 +29,9 @@ function extractFilePrefix(text: string): string | null {
   // Replace all line breaks and multiple spaces with a single space
   return match[1].replace(/\s+/g, " ").trim();
 }
-/**
- * Extract service type (3 possible types)
- */
+
+// Extract service type (3 possible types)
+
 function extractServiceType(text: string): PDFResult["service_Type"] {
   if (/Crown And Bridge/i.test(text)) return "Crown And Bridge";
   if (/Implant/i.test(text)) return "Implant";
@@ -40,9 +39,8 @@ function extractServiceType(text: string): PDFResult["service_Type"] {
   return null;
 }
 
-/**
- * Extract tooth numbers (comma or space separated digits)
- */
+// Extract tooth numbers (comma or space separated digits)
+
 function extractToothNumbers(text: string): number[] {
   const regex = /Tooth Numbers:([\d,\s]+)/i;
   const match = text.match(regex);
@@ -53,25 +51,55 @@ function extractToothNumbers(text: string): number[] {
     .filter((n) => !isNaN(n));
 }
 
-/**
- * Extract additional notes
- */
+// Extract additional notes
 function extractAdditionalNotes(text: string): string | null {
   const regex = /Additional Notes:\s*([\s\S]*?)(?=Splinted Crowns:|$)/i;
   const match = text.match(regex);
   return match ? match[1].trim() : null;
 }
 
-/**
- * Master extractor
- */
+// Master extractor
 export async function extractPDFData(fileBuffer: Buffer): Promise<PDFResult> {
   const text = await readPDF(fileBuffer);
 
   return {
-    file_Prefix: extractFilePrefix(text),
-    service_Type: extractServiceType(text),
-    tooth_Numbers: extractToothNumbers(text),
-    additional_Notes: extractAdditionalNotes(text),
+    file_Prefix: safeExtract(() => extractFilePrefix(text), null),
+    service_Type: safeExtract(() => extractServiceType(text), null),
+    tooth_Numbers: safeExtract(() => extractToothNumbers(text), []),
+    additional_Notes: safeExtract(() => extractAdditionalNotes(text), null),
   };
 }
+
+function safeExtract<T>(fn: () => T, defaultValue: T): T {
+  try {
+    return fn();
+  } catch (err) {
+    console.error("Extractor error:", err);
+    return defaultValue;
+  }
+}
+
+// preload
+// export type PDFResult = {
+//   file_Prefix: string | null;
+//   service_Type: "Crown And Bridge" | "Implant" | "Smile Design" | null;
+//   tooth_Numbers: number[];
+//   additional_Notes: string | null;
+// };
+// parsePDF: (filePath: string) => ipcRenderer.invoke("parse-pdf", filePath), // fixed
+//   getFilePath: (file: File) => {
+//     // Electron File object has a `path` property
+//     return (file as any).path || "";
+//   },
+
+// main
+// ipcMain.handle("parse-pdf", async (_event, fileBuffer: ArrayBuffer) => {
+//   try {
+//     const buffer = Buffer.from(fileBuffer);
+//     const data = await extractPDFData(buffer);
+//     return { success: true, data };
+//   } catch (err) {
+//     console.error("PDF parse error:", err);
+//     return { success: false, error: (err as Error).message };
+//   }
+// });

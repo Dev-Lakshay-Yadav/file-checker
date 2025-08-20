@@ -1,16 +1,22 @@
-// components/FolderViewer.tsx
-import { useState } from "react";
+import React from "react";
 
-const FolderViewer = () => {
-  const [folderFiles, setFolderFiles] = useState<string[] | null>(null);
-  const [dragActive, setDragActive] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+interface FolderViewerProps {
+  folderFiles: string[] | null;
+  setFolderFiles: (files: string[] | null) => void;
+  error: string | null;
+  setError: (err: string | null) => void;
+  onReset: () => void;
+}
 
-  const getFile = (entry: FileSystemFileEntry): Promise<File> => {
-    return new Promise((resolve, reject) => {
-      entry.file(resolve, reject);
-    });
-  };
+const FolderViewer: React.FC<FolderViewerProps> = ({
+  folderFiles,
+  setFolderFiles,
+  error,
+  setError,
+  onReset,
+}) => {
+  const getFile = (entry: FileSystemFileEntry): Promise<File> =>
+    new Promise((resolve, reject) => entry.file(resolve, reject));
 
   const readEntries = async (
     dirEntry: FileSystemDirectoryEntry,
@@ -27,7 +33,6 @@ const FolderViewer = () => {
         const file = await getFile(entry as FileSystemFileEntry);
         collected.push(pathPrefix + file.name);
       } else if (entry.isDirectory) {
-        // pass subfolder name as prefix (but no root folder)
         await readEntries(
           entry as FileSystemDirectoryEntry,
           collected,
@@ -40,7 +45,6 @@ const FolderViewer = () => {
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragActive(false);
 
     try {
       const items = e.dataTransfer.items;
@@ -56,9 +60,8 @@ const FolderViewer = () => {
         if (entry) {
           if (entry.isFile) {
             const file = await getFile(entry as FileSystemFileEntry);
-            files.push(file.name); // only filename
+            files.push(file.name);
           } else if (entry.isDirectory) {
-            // 🚀 FIX: start recursion without root folder name
             await readEntries(entry as FileSystemDirectoryEntry, files, "");
           }
         }
@@ -71,56 +74,39 @@ const FolderViewer = () => {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-  };
-
-  const handleReset = () => {
-    setFolderFiles(null);
-    setError(null);
-  };
-
   return (
     <div className="p-4 border rounded bg-gray-50">
       {!folderFiles ? (
         <div
           onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          className={`h-40 flex items-center justify-center border-2 border-dashed rounded cursor-pointer ${
-            dragActive ? "border-green-500 bg-green-50" : "border-gray-300"
-          }`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className={`h-40 flex items-center justify-center border-2 border-dashed rounded cursor-pointer`}
         >
           <p className="text-gray-600">Drag & Drop a folder here</p>
+          {error && <div className="mt-3 text-red-600">{error}</div>}
         </div>
       ) : (
         <div className="relative max-h-[40vh] overflow-y-auto">
           <button
-            onClick={handleReset}
+            onClick={onReset}
             className="absolute top-2 right-2 px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
           >
             Reset
           </button>
-
           <h3 className="font-semibold mb-2">Files in Folder:</h3>
           <ul className="list-disc list-inside text-sm">
-            {folderFiles.map((file, index) => (
-              <li key={index}>{file}</li>
+            {folderFiles.map((file, idx) => (
+              <li key={idx}>{file}</li>
             ))}
           </ul>
         </div>
-      )}
-
-      {error && (
-        <div className="mt-3 p-2 bg-red-100 text-red-700 rounded">{error}</div>
       )}
     </div>
   );

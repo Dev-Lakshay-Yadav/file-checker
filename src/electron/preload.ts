@@ -9,6 +9,7 @@ export type PDFResult = {
 
 contextBridge.exposeInMainWorld("electronAPI", {
   helloWorld: () => ipcRenderer.invoke("helloWorld"),
+  openFolder: () => ipcRenderer.invoke("open-folder"),
   parsePDF: (filePath: string) => ipcRenderer.invoke("parse-pdf", filePath), // fixed
   getFilePath: (file: File) => {
     // Electron File object has a `path` property

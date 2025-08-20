@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 declare global {
   interface Window {
@@ -10,15 +10,29 @@ declare global {
   }
 }
 
-const PDFReader: React.FC = () => {
-  const [pdfData, setPdfData] = useState<any>(null);
-  const [error, setError] = useState("");
-  const [fileName, setFileName] = useState<File | null>(null);
+interface PDFReaderProps {
+  pdfData: any;
+  setPdfData: (data: any) => void;
+  pdfFile: File | null;
+  setPdfFile: (file: File | null) => void;
+  error: string | null;
+  setError: (err: string | null) => void;
+  onReset: () => void;
+}
 
+const PDFReader: React.FC<PDFReaderProps> = ({
+  pdfData,
+  setPdfData,
+  pdfFile,
+  setPdfFile,
+  error,
+  setError,
+  onReset,
+}) => {
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setError("");
+    setError(null);
     setPdfData(null);
 
     const file = event.target.files?.[0];
@@ -32,7 +46,7 @@ const PDFReader: React.FC = () => {
       return;
     }
 
-    setFileName(file);
+    setPdfFile(file);
 
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -48,17 +62,10 @@ const PDFReader: React.FC = () => {
     }
   };
 
-  const handleReset = () => {
-    setPdfData(null);
-    setError("");
-    setFileName(null);
-  };
-
   return (
     <div className="w-full h-full flex flex-col items-center relative p-4">
-      {/* Reset button in top-right */}
       <button
-        onClick={handleReset}
+        onClick={onReset}
         className="absolute top-4 right-4 px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
       >
         Reset
@@ -66,7 +73,6 @@ const PDFReader: React.FC = () => {
 
       <h3 className="text-xl font-semibold mb-6">PDF Reader</h3>
 
-      {/* Select PDF button */}
       {!pdfData && (
         <>
           <input
@@ -82,17 +88,15 @@ const PDFReader: React.FC = () => {
           >
             Select PDF
           </label>
-          {fileName && (
+          {pdfFile && (
             <p className="text-sm mt-2">
-              File: <strong>{fileName.name}</strong>
+              File: <strong>{pdfFile.name}</strong>
             </p>
           )}
           {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
         </>
       )}
 
-      {/* Display parsed PDF data */}
-      {/* Display parsed PDF data */}
       {pdfData && (
         <div className="w-full max-w-lg mt-4 space-y-2">
           <div className="flex justify-between border-b pb-1">
