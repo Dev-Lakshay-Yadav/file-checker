@@ -25,49 +25,30 @@ app.on("ready", () => {
     try {
       const result = await extractPdfText(fileData);
       if (result.error) return { error: result.error };
-  
+
       const processed = result.text ? processPdfText(result.text) : null;
       return processed ?? { error: "No text extracted" };
     } catch (err) {
-      return { error: err instanceof Error ? err.message : "Failed to read PDF" };
+      return {
+        error: err instanceof Error ? err.message : "Failed to read PDF",
+      };
     }
   });
 
   ipcMain.handle("open-folder", async () => {
     try {
       const result = await folderService();
-      if (!result) return { success: false, error: "Folder selection canceled" };
+      if (!result)
+        return { success: false, error: "Folder selection canceled" };
       return { success: true, folder: result.path, files: result.files };
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
     }
   });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import { extractPDFData } from "./services/pdfService.js";
 // ipcMain.handle("parse-pdf", async (_event, fileBuffer: ArrayBuffer) => {
