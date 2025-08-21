@@ -7,7 +7,6 @@ export async function extractPdfText(fileData: Uint8Array) {
     const buffer = Buffer.from(fileData);
     const data = await pdf(buffer);
     lastExtractedText = data.text;
-    console.log("📄 Extracted PDF Text:\n", lastExtractedText);
     return { text: data.text };
   } catch (err: any) {
     return { error: err.message };

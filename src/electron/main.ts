@@ -23,9 +23,11 @@ app.on("ready", () => {
 
   ipcMain.handle("extract-pdf-text", async (_event, fileData: Uint8Array) => {
     try {
+      // Extract text from PDF
       const result = await extractPdfText(fileData);
       if (result.error) return { error: result.error };
-
+  
+      // Process text into structured data
       const processed = result.text ? processPdfText(result.text) : null;
       return processed ?? { error: "No text extracted" };
     } catch (err) {
