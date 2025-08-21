@@ -56,7 +56,7 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
     const serviceType = pdfData.service_Type.toLowerCase(); // convert to lowercase
 
     switch (serviceType) {
-      case "crown bridge":
+      case "crown and bridge":
         return crownBridgeCheck();
       case "implant":
         return implantCheck();
@@ -75,10 +75,6 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
       problems.push("No tooth numbers selected");
     }
 
-    if (!pdfData.material) {
-      problems.push("Material not specified");
-    }
-
     if (!folderFiles || folderFiles.length === 0) {
       problems.push("No folder files found");
       return (
@@ -87,7 +83,9 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           <p>Problems found:</p>
           <ul>
             {problems.map((problem, i) => (
-              <li key={i}>{problem}</li>
+              <li className="text-red-500" key={i}>
+                {problem}
+              </li>
             ))}
           </ul>
         </div>
@@ -96,7 +94,6 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
 
     const prefix = pdfData.file_Prefix ? pdfData.file_Prefix.toLowerCase() : "";
 
-    // Check if we have a valid prefix
     if (!prefix) {
       problems.push("File prefix missing in PDF data");
       return (
@@ -105,15 +102,27 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           <p>Problems found:</p>
           <ul>
             {problems.map((p, i) => (
-              <li key={i}>{p}</li>
+              <li className="text-red-500" key={i}>
+                {p}
+              </li>
             ))}
           </ul>
         </div>
       );
     }
 
-    // Helper to check if a file exists matching name & extensions (case-insensitive)
-    const hasFile = (names: string[], exts: string[]) =>
+    // Helper: check if file contains keyword + extension
+    const hasFileContaining = (keyword: string, exts: string[]) =>
+      folderFiles.some((file) => {
+        const f = file.toLowerCase();
+        return (
+          f.includes(keyword.toLowerCase()) &&
+          exts.some((ext) => f.endsWith(ext.toLowerCase()))
+        );
+      });
+
+    // Helper: check for files with prefix specifically
+    const hasFileWithPrefix = (names: string[], exts: string[]) =>
       folderFiles.some((file) => {
         const f = file.toLowerCase();
         return names.some((name) =>
@@ -124,11 +133,13 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
         );
       });
 
-    // Required HTML & ZIP
-    if (!hasFile([prefix], [".html"])) problems.push(".html file missing");
-    if (!hasFile([prefix], [".zip"])) problems.push(".zip file missing");
+    // Required HTML & ZIP (must match prefix)
+    if (!hasFileWithPrefix([prefix], [".html"]))
+      problems.push(".html file missing");
+    if (!hasFileWithPrefix([prefix], [".zip"]))
+      problems.push(".zip file missing");
 
-    // Required named images
+    // Required named images (contain anywhere in file name)
     const requiredImgs = [
       "occlusal contact",
       "proximal contact",
@@ -136,15 +147,15 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
       "pre-op",
     ];
     requiredImgs.forEach((img) => {
-      if (!hasFile([`${prefix} ${img}`], [".jpg", ".jpeg", ".png"])) {
+      if (!hasFileContaining(img, [".jpg", ".jpeg", ".png"])) {
         problems.push(`Missing image: ${img}`);
       }
     });
 
-    // At least 3 additional pics (pic1, pic2, pic3, ...)
+    // At least 3 additional pics
     const picFiles = folderFiles.filter(
       (f) =>
-        f.toLowerCase().startsWith(prefix + " pic") &&
+        f.toLowerCase().includes(prefix + " pic") &&
         [".jpg", ".jpeg", ".png"].some((ext) => f.toLowerCase().endsWith(ext))
     );
     if (picFiles.length < 3)
@@ -174,7 +185,9 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           <p>Problems found:</p>
           <ul>
             {problems.map((p, i) => (
-              <li key={i}>{p}</li>
+              <li className="text-red-500" key={i}>
+                {p}
+              </li>
             ))}
           </ul>
         </div>
@@ -186,10 +199,6 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
   function implantCheck() {
     const problems: string[] = [];
 
-    if (!pdfData.implantSize) {
-      problems.push("Implant size missing");
-    }
-
     if (!folderFiles || folderFiles.length === 0) {
       problems.push("No folder files found");
       return (
@@ -198,7 +207,9 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           <p>Problems found:</p>
           <ul>
             {problems.map((p, i) => (
-              <li key={i}>{p}</li>
+              <li className="text-red-500" key={i}>
+                {p}
+              </li>
             ))}
           </ul>
         </div>
@@ -207,7 +218,6 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
 
     const prefix = pdfData.file_Prefix ? pdfData.file_Prefix.toLowerCase() : "";
 
-    // Check if we have a valid prefix
     if (!prefix) {
       problems.push("File prefix missing in PDF data");
       return (
@@ -216,15 +226,27 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           <p>Problems found:</p>
           <ul>
             {problems.map((p, i) => (
-              <li key={i}>{p}</li>
+              <li className="text-red-500" key={i}>
+                {p}
+              </li>
             ))}
           </ul>
         </div>
       );
     }
 
-    // Helper to check if a file exists matching name & extensions (case-insensitive)
-    const hasFile = (names: string[], exts: string[]) =>
+    // Helper: check if file exists with keyword + extension (anywhere in name)
+    const hasFileContaining = (keyword: string, exts: string[]) =>
+      folderFiles.some((file) => {
+        const f = file.toLowerCase();
+        return (
+          f.includes(keyword.toLowerCase()) &&
+          exts.some((ext) => f.endsWith(ext.toLowerCase()))
+        );
+      });
+
+    // Helper: check for files with prefix specifically
+    const hasFileWithPrefix = (names: string[], exts: string[]) =>
       folderFiles.some((file) => {
         const f = file.toLowerCase();
         return names.some((name) =>
@@ -235,11 +257,13 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
         );
       });
 
-    // Required HTML & ZIP
-    if (!hasFile([prefix], [".html"])) problems.push(".html file missing");
-    if (!hasFile([prefix], [".zip"])) problems.push(".zip file missing");
+    // Required HTML & ZIP (must match prefix)
+    if (!hasFileWithPrefix([prefix], [".html"]))
+      problems.push(".html file missing");
+    if (!hasFileWithPrefix([prefix], [".zip"]))
+      problems.push(".zip file missing");
 
-    // Required named images
+    // Required named images (contain anywhere in name)
     const requiredImgs = [
       "implant selection",
       "hole angulation",
@@ -247,15 +271,15 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
       "tie base height",
     ];
     requiredImgs.forEach((img) => {
-      if (!hasFile([`${prefix} ${img}`], [".jpg", ".jpeg", ".png"])) {
+      if (!hasFileContaining(img, [".jpg", ".jpeg", ".png"])) {
         problems.push(`Missing image: ${img}`);
       }
     });
 
-    // At least 4 additional pics (pic1, pic2, pic3, pic4, ...)
+    // At least 4 additional pics (pic1, pic2, ...)
     const picFiles = folderFiles.filter(
       (f) =>
-        f.toLowerCase().startsWith(prefix + " pic") &&
+        f.toLowerCase().includes(prefix + " pic") &&
         [".jpg", ".jpeg", ".png"].some((ext) => f.toLowerCase().endsWith(ext))
     );
     if (picFiles.length < 4)
@@ -285,7 +309,9 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           <p>Problems found:</p>
           <ul>
             {problems.map((p, i) => (
-              <li key={i}>{p}</li>
+              <li className="text-red-500" key={i}>
+                {p}
+              </li>
             ))}
           </ul>
         </div>
@@ -308,7 +334,9 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           <p>Problems found:</p>
           <ul>
             {problems.map((p, i) => (
-              <li key={i}>{p}</li>
+              <li className="text-red-500" key={i}>
+                {p}
+              </li>
             ))}
           </ul>
         </div>
@@ -317,7 +345,6 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
 
     const prefix = pdfData.file_Prefix ? pdfData.file_Prefix.toLowerCase() : "";
 
-    // Check if we have a valid prefix
     if (!prefix) {
       problems.push("File prefix missing in PDF data");
       return (
@@ -326,15 +353,27 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           <p>Problems found:</p>
           <ul>
             {problems.map((p, i) => (
-              <li key={i}>{p}</li>
+              <li className="text-red-500" key={i}>
+                {p}
+              </li>
             ))}
           </ul>
         </div>
       );
     }
 
-    // Helper to check if a file exists matching name & extensions (case-insensitive)
-    const hasFile = (names: string[], exts: string[]) =>
+    // Helper: check if file contains keyword + extension
+    const hasFileContaining = (keyword: string, exts: string[]) =>
+      folderFiles.some((file) => {
+        const f = file.toLowerCase();
+        return (
+          f.includes(keyword.toLowerCase()) &&
+          exts.some((ext) => f.endsWith(ext.toLowerCase()))
+        );
+      });
+
+    // Helper: check for files with prefix specifically
+    const hasFileWithPrefix = (names: string[], exts: string[]) =>
       folderFiles.some((file) => {
         const f = file.toLowerCase();
         return names.some((name) =>
@@ -345,19 +384,21 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
         );
       });
 
-    // Required HTML & ZIP
-    if (!hasFile([prefix], [".html"])) problems.push(".html file missing");
-    if (!hasFile([prefix], [".zip"])) problems.push(".zip file missing");
+    // Required HTML & ZIP (must match prefix)
+    if (!hasFileWithPrefix([prefix], [".html"]))
+      problems.push(".html file missing");
+    if (!hasFileWithPrefix([prefix], [".zip"]))
+      problems.push(".zip file missing");
 
-    // Required Visual Contact image
-    if (!hasFile([`${prefix} visual contact`], [".jpg", ".jpeg", ".png"])) {
+    // Required Visual Contact image (contain anywhere in filename)
+    if (!hasFileContaining("visual contact", [".jpg", ".jpeg", ".png"])) {
       problems.push("Missing image: Visual Contact");
     }
 
-    // At least 6 additional pics (pic1, pic2, pic3, ...)
+    // At least 6 additional pics
     const picFiles = folderFiles.filter(
       (f) =>
-        f.toLowerCase().startsWith(prefix + " pic") &&
+        f.toLowerCase().includes(prefix + " pic") &&
         [".jpg", ".jpeg", ".png"].some((ext) => f.toLowerCase().endsWith(ext))
     );
     if (picFiles.length < 6)
@@ -384,7 +425,9 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           <p>Problems found:</p>
           <ul>
             {problems.map((p, i) => (
-              <li key={i}>{p}</li>
+              <li className="text-red-500" key={i}>
+                {p}
+              </li>
             ))}
           </ul>
         </div>
@@ -400,7 +443,7 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
         <p>No files found.</p>
       )}
 
-      <h2>PDF Data Analysis</h2>
+      <h2>PDF succesfully upload</h2>
       {renderCategory()}
     </div>
   );

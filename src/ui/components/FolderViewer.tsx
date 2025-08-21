@@ -75,7 +75,7 @@ const FolderViewer: React.FC<FolderViewerProps> = ({
   };
 
   return (
-    <div className="p-4 border rounded bg-gray-50">
+    <div className="p-2 border rounded bg-gray-50">
       {!folderFiles ? (
         <div
           onDrop={handleDrop}
@@ -87,13 +87,13 @@ const FolderViewer: React.FC<FolderViewerProps> = ({
             e.preventDefault();
             e.stopPropagation();
           }}
-          className={`h-40 flex items-center justify-center border-2 border-dashed rounded cursor-pointer`}
+          className={`h-20 flex items-center justify-center border-2 border-dashed rounded cursor-pointer`}
         >
           <p className="text-gray-600">Drag & Drop a folder here</p>
           {error && <div className="mt-3 text-red-600">{error}</div>}
         </div>
       ) : (
-        <div className="relative max-h-[40vh] overflow-y-auto">
+        <div className="relative max-h-[20vh] overflow-y-auto">
           <button
             onClick={onReset}
             className="absolute top-2 right-2 px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"

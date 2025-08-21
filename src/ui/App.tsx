@@ -39,24 +39,32 @@
 //         setError={setError}
 //         onReset={resetPDF}
 //       />
-//       <Result folderFiles={folderFiles} pdfData={pdfData} />
+// <Result folderFiles={folderFiles} pdfData={pdfData} />
 //     </div>
 //   );
 // };
 
 // export default App;
-
 import React, { useState } from "react";
 import PDFRead from "./components/PDFRead";
 import FolderViewer from "./components/FolderViewer";
+import Result from "./components/Result";
+
+interface PDFResult {
+  file_Prefix: string;
+  service_Type: string;
+  tooth_Numbers: number[];
+  additional_Notes: string;
+  error?: string;
+}
 
 const App: React.FC = () => {
-  const [pdfText, setPdfText] = useState("");
+  const [pdfData, setPdfData] = useState<PDFResult | null>(null);
   const [fileName, setFileName] = useState("");
   const [folderFiles, setFolderFiles] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFileName(file.name);
@@ -66,10 +74,13 @@ const App: React.FC = () => {
       const uint8Array = new Uint8Array(arrayBuffer);
 
       const result = await window.electronAPI.extractPdfText(uint8Array);
-      if (result.error) {
-        setPdfText("Error: " + result.error);
+
+      if ("error" in result) {
+        setError(result.error);
+        setPdfData(null);
       } else {
-        setPdfText(result.text || "");
+        setError(null);
+        setPdfData(result);
       }
     }
   };
@@ -79,25 +90,35 @@ const App: React.FC = () => {
     setError(null);
   };
 
-  return (
-    <div>
-      <div style={{ padding: "20px" }}>
-        <h2>PDF Text Extractor</h2>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={handleFileChange}
-        />
-        <PDFRead pdfText={pdfText} fileName={fileName} />
-      </div>
+  const handleReset = () => {
+    setPdfData(null);
+    setFileName("");
+    setError(null);
+  };
 
-      <FolderViewer
-        folderFiles={folderFiles}
-        setFolderFiles={setFolderFiles}
-        error={error}
-        setError={setError}
-        onReset={resetFolder}
-      />
+  return (
+    <div className="space-y-4 p-4">
+      <div className="w-full h-full p-4 bg-gray-100">
+        <PDFRead
+          pdfData={pdfData}
+          fileName={fileName}
+          error={error}
+          onUpload={handleUpload}
+          onReset={handleReset}
+        />
+      </div>
+      <div className="w-full h-full">
+        <FolderViewer
+          folderFiles={folderFiles}
+          setFolderFiles={setFolderFiles}
+          error={error}
+          setError={setError}
+          onReset={resetFolder}
+        />
+      </div>
+      <div className="w-full h-full">
+        <Result folderFiles={folderFiles} pdfData={pdfData} />
+      </div>
     </div>
   );
 };

@@ -1,9 +1,8 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import { helloWorld, isDev } from "./utils.js";
 import { fileURLToPath } from "url";
 import { openFolder as folderService } from "./services/fileService.js";
-import pdf from "pdf-parse";
+import { extractPdfText, processPdfText } from "./services/pdfService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,40 +19,31 @@ app.on("ready", () => {
     },
   });
 
-  if (isDev()) {
-    mainWindow.loadURL("http://localhost:3000");
-  } else {
-    mainWindow.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
-  }
-
-  // helloWorld
-  ipcMain.handle("helloWorld", () => helloWorld());
-  ipcMain.handle("open-folder", async () => {
-    try {
-      const result = await folderService();
-      if (!result) {
-        return { success: false, error: "Folder selection canceled" };
-      }
-      return { success: true, folder: result.path, files: result.files };
-    } catch (error) {
-      console.error("Folder open error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      };
-    }
-  });
+  mainWindow.loadURL("http://localhost:3000"); // or loadFile in prod
 
   ipcMain.handle("extract-pdf-text", async (_event, fileData: Uint8Array) => {
     try {
-      const buffer = Buffer.from(fileData); // convert here inside Node (safe)
-      const data = await pdf(buffer);
-      return { text: data.text, numpages: data.numpages };
-    } catch (err: any) {
-      return { error: err.message };
+      const result = await extractPdfText(fileData);
+      if (result.error) return { error: result.error };
+  
+      const processed = result.text ? processPdfText(result.text) : null;
+      return processed ?? { error: "No text extracted" };
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : "Failed to read PDF" };
+    }
+  });
+
+  ipcMain.handle("open-folder", async () => {
+    try {
+      const result = await folderService();
+      if (!result) return { success: false, error: "Folder selection canceled" };
+      return { success: true, folder: result.path, files: result.files };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   });
 });
+
 
 
 
