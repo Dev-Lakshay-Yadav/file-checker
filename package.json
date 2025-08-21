@@ -1,7 +1,10 @@
 {
-  "name": "desktop-app",
+  "name": "Case-file-checker",
   "private": true,
   "version": "0.0.0",
+  "description": "check ju case files",
+  "author": "toothsketch",
+  "license": "MIT",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
