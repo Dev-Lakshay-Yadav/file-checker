@@ -1,3 +1,41 @@
+
+// preload.ts
+import { contextBridge, ipcRenderer } from "electron";
+
+// Expose selected APIs to renderer
+contextBridge.exposeInMainWorld("electronAPI", {
+  helloWorld: () => ipcRenderer.invoke("helloWorld"),
+  openFolder: () => ipcRenderer.invoke("open-folder"),
+  extractPdfText: (fileData: Uint8Array) =>
+    ipcRenderer.invoke("extract-pdf-text", fileData),
+});
+
+// TypeScript typings for the renderer process
+declare global {
+  interface Window {
+    electronAPI: {
+      helloWorld: () => Promise<string>;
+      openFolder: () => Promise<string[]>;
+      extractPdfText: (
+        fileData: Uint8Array
+      ) => Promise<{ text?: string; numpages?: number; error?: string }>;
+    };
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // import { contextBridge, ipcRenderer } from "electron";
 
 // export type PDFResult = {
@@ -10,28 +48,9 @@
 // contextBridge.exposeInMainWorld("electronAPI", {
 //   helloWorld: () => ipcRenderer.invoke("helloWorld"),
 //   openFolder: () => ipcRenderer.invoke("open-folder"),
-  // parsePDF: (filePath: string) => ipcRenderer.invoke("parse-pdf", filePath), // fixed
-  // getFilePath: (file: File) => {
-  //   // Electron File object has a `path` property
-  //   return (file as any).path || "";
-  // },
+//   parsePDF: (filePath: string) => ipcRenderer.invoke("parse-pdf", filePath), // fixed
+//   getFilePath: (file: File) => {
+//     // Electron File object has a `path` property
+//     return (file as any).path || "";
+//   },
 // });
-
-
-
-
-import { contextBridge, ipcRenderer } from "electron";
-
-contextBridge.exposeInMainWorld("electronAPI", {
-  extractPdfText: (fileData: Uint8Array) =>
-    ipcRenderer.invoke("extract-pdf-text", fileData),
-});
-
-
-declare global {
-  interface Window {
-    electronAPI: {
-      extractPdfText: (filePath: string) => Promise<{ text?: string; numpages?: number; error?: string }>;
-    };
-  }
-}

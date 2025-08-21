@@ -47,10 +47,14 @@
 // export default App;
 
 import React, { useState } from "react";
+import PDFRead from "./components/PDFRead";
+import FolderViewer from "./components/FolderViewer";
 
 const App: React.FC = () => {
   const [pdfText, setPdfText] = useState("");
   const [fileName, setFileName] = useState("");
+  const [folderFiles, setFolderFiles] = useState<string[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -70,12 +74,30 @@ const App: React.FC = () => {
     }
   };
 
+  const resetFolder = () => {
+    setFolderFiles(null);
+    setError(null);
+  };
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>PDF Text Extractor</h2>
-      <input type="file" accept="application/pdf" onChange={handleFileChange} />
-      <h3>File: {fileName}</h3>
-      <pre style={{ whiteSpace: "pre-wrap", marginTop: "20px" }}>{pdfText}</pre>
+    <div>
+      <div style={{ padding: "20px" }}>
+        <h2>PDF Text Extractor</h2>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={handleFileChange}
+        />
+        <PDFRead pdfText={pdfText} fileName={fileName} />
+      </div>
+
+      <FolderViewer
+        folderFiles={folderFiles}
+        setFolderFiles={setFolderFiles}
+        error={error}
+        setError={setError}
+        onReset={resetFolder}
+      />
     </div>
   );
 };

@@ -17,10 +17,12 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
+    "buffer": "^6.0.3",
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^5.4.54",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-dropzone": "^14.3.8",
     "tailwindcss": "^4.1.12"
   },
   "devDependencies": {
@@ -29,6 +31,7 @@
     "@types/pdfjs-dist": "^2.10.377",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/react-dropzone": "^4.2.2",
     "@vitejs/plugin-react": "^4.4.1",
     "cross-env": "^10.0.0",
     "electron": "^37.3.1",
