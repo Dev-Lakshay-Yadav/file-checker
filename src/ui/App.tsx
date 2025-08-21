@@ -45,6 +45,7 @@
 // };
 
 // export default App;
+
 import React, { useState } from "react";
 import PDFRead from "./components/PDFRead";
 import FolderViewer from "./components/FolderViewer";
@@ -56,6 +57,21 @@ interface PDFResult {
   tooth_Numbers: number[];
   additional_Notes: string;
   error?: string;
+}
+
+declare global {
+  interface Window {
+    electronAPI: {
+      helloWorld: () => Promise<string>;
+      openFolder: () => Promise<string[]>;
+      extractPdfText: (
+        fileData: Uint8Array
+      ) => Promise<PDFResult | { error: string }>;
+      parsePDF: (
+        fileBuffer: ArrayBuffer
+      ) => Promise<{ success: boolean; data?: any; error?: string }>;
+    };
+  }
 }
 
 const App: React.FC = () => {
@@ -76,7 +92,7 @@ const App: React.FC = () => {
       const result = await window.electronAPI.extractPdfText(uint8Array);
 
       if ("error" in result) {
-        setError(result.error);
+        setError(result.error ?? "Unknown error");
         setPdfData(null);
       } else {
         setError(null);
