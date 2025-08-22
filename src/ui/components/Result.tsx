@@ -79,6 +79,8 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
 
   // ========== Centralized Config ==========
   const checkConfigs: Record<string, { title: string; rules: CheckRule[] }> = {
+
+
     "crown and bridge": {
       title: "Crown Bridge",
       rules: [
@@ -147,30 +149,33 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           message: `Missing .stl files for teeth`,
         },
         {
-          label: "preop if 3+ teeth",
+          label: "preop",
           validate: () => {
-            if ((pdfData.tooth_Numbers?.length || 0) < 3) return true;
-            const preOps =
-              folderFiles?.filter((f) => {
-                const n = f.toLowerCase();
-                return (
-                  (n.includes("preop") || n.includes("pre op")) &&
-                  (n.endsWith(".stl") ||
-                    [".jpg", ".jpeg", ".png"].some((ext) => n.endsWith(ext)))
-                );
-              }) ?? [];
-            return (
-              preOps.some((f) => f.endsWith(".stl")) &&
-              preOps.some((f) =>
-                [".jpg", ".jpeg", ".png"].some((ext) => f.endsWith(ext))
-              )
+            const files = folderFiles?.map((f) => f.toLowerCase()) ?? [];
+
+            const preOps = files.filter(
+              (f) =>
+                (f.includes("preop") || f.includes("pre op")) &&
+                (f.endsWith(".stl") ||
+                  f.endsWith(".jpg") ||
+                  f.endsWith(".jpeg") ||
+                  f.endsWith(".png"))
             );
+
+            const hasStl = preOps.some((f) => f.endsWith(".stl"));
+            const hasImage = preOps.some(
+              (f) =>
+                f.endsWith(".jpg") || f.endsWith(".jpeg") || f.endsWith(".png")
+            );
+
+            return hasStl && hasImage;
           },
           message:
             "Pre-op files missing: need at least one .stl and one image (.jpg/.jpeg/.png)",
         },
       ],
     },
+
     implant: {
       title: "Implant",
       rules: [
@@ -195,15 +200,40 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           message: ".zip file missing",
         },
         {
-          label: "implant imgs",
+          label: "implant selection",
           validate: () =>
-            [
-              "implant selection",
-              "hole angulation",
-              "hole diameter",
-              "tie base height",
-            ].every((img) => hasFileContaining(img, [".jpg", ".jpeg", ".png"])),
-          message: "Missing one or more implant images",
+            hasFileContaining("implant selection", [".jpg", ".jpeg", ".png"]),
+          message: "Missing image: implant selection",
+        },
+        {
+          label: "hole angulation",
+          validate: () =>
+            hasFileContaining("hole angulation", [".jpg", ".jpeg", ".png"]),
+          message: "Missing image: hole angulation",
+        },
+        {
+          label: "3 mm hole",
+          validate: () =>
+            hasFileContaining("3 mm hole", [".jpg", ".jpeg", ".png"]),
+          message: "Missing image: 3 mm hole",
+        },
+        {
+          label: "ti base",
+          validate: () =>
+            hasFileContaining("ti base", [".jpg", ".jpeg", ".png"]),
+          message: "Missing image: ti base",
+        },
+        {
+          label: "occlusal contact",
+          validate: () =>
+            hasFileContaining("occlusal contact", [".jpg", ".jpeg", ".png"]),
+          message: "Missing image: occlusal contact",
+        },
+        {
+          label: "proximal contact",
+          validate: () =>
+            hasFileContaining("proximal contact", [".jpg", ".jpeg", ".png"]),
+          message: "Missing image: proximal contact",
         },
         {
           label: "pics",
@@ -221,14 +251,10 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
         },
       ],
     },
+
     "smile design": {
       title: "Smile Design",
       rules: [
-        {
-          label: "smileType",
-          validate: () => !!pdfData.smileType,
-          message: "Smile type not selected",
-        },
         {
           label: "folder files",
           validate: () => !!folderFiles?.length,
@@ -248,12 +274,6 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
           label: "zip",
           validate: () => countFilesExt([".zip"]) > 0,
           message: ".zip file missing",
-        },
-        {
-          label: "visual contact img",
-          validate: () =>
-            hasFileContaining("visual contact", [".jpg", ".jpeg", ".png"]),
-          message: "Missing image: Visual Contact",
         },
         {
           label: "pics",

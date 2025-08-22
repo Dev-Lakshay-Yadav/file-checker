@@ -11,12 +11,12 @@
     "dev": "npm-run-all --parallel dev:react dev:electron",
     "dev:react": "vite",
     "dev:electron": "npm run transpile:electron && cross-env NODE_ENV=development electron .",
-    "build": "tsc -b && vite build",
+    "build": "cross-env TAILWIND_DISABLE_WASM=1 tsc -b && cross-env TAILWIND_DISABLE_WASM=1 vite build",
     "preview": "vite preview",
     "transpile:electron": "tsc --project src/electron/tsconfig.json",
-    "dist:mac": "npm run transpile:electron && npm run build && electron-builder --mac --arm64",
-    "dist:win": "npm run transpile:electron && npm run build && electron-builder --win --x64",
-    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64"
+    "dist:mac": "npm run transpile:electron && npm run build && cross-env TAILWIND_DISABLE_WASM=1 electron-builder --mac --arm64",
+    "dist:win": "npm run transpile:electron && npm run build && cross-env TAILWIND_DISABLE_WASM=1 electron-builder --win --x64",
+    "dist:linux": "npm run transpile:electron && npm run build && cross-env TAILWIND_DISABLE_WASM=1 electron-builder --linux --x64"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
