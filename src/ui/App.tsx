@@ -63,12 +63,6 @@ const App: React.FC = () => {
     setError(null);
   };
 
-  const handleReset = () => {
-    setPdfData(null);
-    setFileName("");
-    setError(null);
-  };
-
   return (
     <div className="space-y-4 p-4">
       <div className="w-full h-full p-4 bg-gray-100">
@@ -77,7 +71,6 @@ const App: React.FC = () => {
           fileName={fileName}
           error={error}
           onUpload={handleUpload}
-          onReset={handleReset}
         />
       </div>
       <div className="w-full h-full">

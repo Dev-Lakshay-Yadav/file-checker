@@ -12,7 +12,6 @@ interface PDFReadProps {
   fileName: string;
   error: string | null;
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onReset: () => void;
 }
 
 const PDFRead: React.FC<PDFReadProps> = ({
@@ -20,7 +19,6 @@ const PDFRead: React.FC<PDFReadProps> = ({
   fileName,
   error,
   onUpload,
-  onReset,
 }) => {
   return (
     <div className="p-2 bg-white shadow-lg rounded-2xl max-w-3xl mx-auto">
@@ -40,14 +38,6 @@ const PDFRead: React.FC<PDFReadProps> = ({
               className="hidden"
             />
           </label>
-
-          {/* Reset Button */}
-          <button
-            onClick={onReset}
-            className="h-full w-16 py-1 text-sm bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 transition"
-          >
-            Reset
-          </button>
         </div>
       </div>
 
@@ -68,12 +58,21 @@ const PDFRead: React.FC<PDFReadProps> = ({
             <div className="flex">
               <div className="w-full">
                 <span className="font-semibold text-gray-700">
-                  Service Type:
+                  Case File:
                 </span>{" "}
-                <span className="text-gray-900">{pdfData.service_Type}</span>
+                <span className="text-gray-900">{pdfData.file_Prefix}</span>
               </div>
 
               <div className="w-full">
+                <span className="font-semibold text-gray-700">
+                  Service Type:
+                </span>{" "}
+                <span className="text-gray-900">{pdfData.service_Type}</span>
+              </div>        
+            </div>
+
+            <div>
+            <div className="w-full">
                 <span className="font-semibold text-gray-700">
                   Tooth Numbers:
                 </span>{" "}

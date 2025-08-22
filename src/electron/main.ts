@@ -24,6 +24,9 @@ app.on("ready", () => {
 
   // for production
   // mainWindow.loadFile(path.join(__dirname, "../dist-react/index.html"));
+
+
+  
   ipcMain.handle("extract-pdf-text", async (_event, fileData: Uint8Array) => {
     try {
       // Convert Uint8Array to Node.js Buffer
