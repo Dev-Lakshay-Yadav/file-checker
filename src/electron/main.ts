@@ -20,10 +20,10 @@ app.on("ready", () => {
   });
 
   // for development
-  // mainWindow.loadURL("http://localhost:3000");
+  mainWindow.loadURL("http://localhost:3000");
 
   // for production
-  mainWindow.loadFile(path.join(__dirname, "../dist-react/index.html"));
+  // mainWindow.loadFile(path.join(__dirname, "../dist-react/index.html"));
 
 
   

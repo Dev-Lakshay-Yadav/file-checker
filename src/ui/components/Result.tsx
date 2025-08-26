@@ -158,8 +158,11 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData , folderName }) =>
         {
           label: "preop",
           validate: () => {
+            // Only check if there are more than 3 teeth
+            if ((pdfData.tooth_Numbers?.length || 0) <= 3) return true;
+        
             const files = folderFiles?.map((f) => f.toLowerCase()) ?? [];
-
+        
             const preOps = files.filter(
               (f) =>
                 (f.includes("preop") || f.includes("pre op")) &&
@@ -168,18 +171,17 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData , folderName }) =>
                   f.endsWith(".jpeg") ||
                   f.endsWith(".png"))
             );
-
+        
             const hasStl = preOps.some((f) => f.endsWith(".stl"));
             const hasImage = preOps.some(
-              (f) =>
-                f.endsWith(".jpg") || f.endsWith(".jpeg") || f.endsWith(".png")
+              (f) => f.endsWith(".jpg") || f.endsWith(".jpeg") || f.endsWith(".png")
             );
-
+        
             return hasStl && hasImage;
           },
           message:
             "Pre-op files missing: need at least one .stl and one image (.jpg/.jpeg/.png)",
-        },
+        }
       ],
     },
 
@@ -299,10 +301,9 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData , folderName }) =>
 
   // ========== Runner ==========
   function runCheck(serviceType: string) {
+    if(!serviceType){return <div>Unknown case type</div>;}
     const config = checkConfigs[serviceType.toLowerCase()];
-    if (!config) {
-      return <div>Unknown service type: {pdfData.service_Type}</div>;
-    }
+
 
     const problems = config.rules
       .filter((rule) => !rule.validate())
