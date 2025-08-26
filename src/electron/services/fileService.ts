@@ -11,6 +11,7 @@ export async function openFolder() {
   if (canceled || filePaths.length === 0) return null;
 
   const folderPath = filePaths[0];
+  const folderName = path.basename(folderPath); // 👈 Get folder name
 
   // Read all entries in folder
   const entries = await fs.readdir(folderPath, { withFileTypes: true });
@@ -20,8 +21,9 @@ export async function openFolder() {
     .filter((entry) => entry.isFile())
     .map((file) => file.name);
 
-  return { path: folderPath, files };
+  return { path: folderPath, name: folderName, files };
 }
+
 
 
 

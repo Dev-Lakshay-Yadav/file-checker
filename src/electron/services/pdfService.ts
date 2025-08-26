@@ -27,14 +27,17 @@ function extractFilePrefix(text: string): string | null {
 function extractServiceType(
   text: string
 ): "Crown And Bridge" | "Implant" | "Smile Design" | null {
+  // Only consider text before "Tooth Numbers:"
+  const cutoffIndex = text.indexOf("Tooth Numbers:");
+  const searchText =
+    cutoffIndex !== -1 ? text.substring(0, cutoffIndex) : text;
+
   const services = ["Crown And Bridge", "Implant", "Smile Design"];
 
   for (const service of services) {
-    const regex = new RegExp(`\\b${service}\\b`, "i"); // match ignoring case
-    if (regex.test(text)) {
-      // Normalize capitalization
-      if (service.toLowerCase() === "crown and bridge")
-        return "Crown And Bridge";
+    const regex = new RegExp(`\\b${service}\\b`, "i"); // case-insensitive
+    if (regex.test(searchText)) {
+      if (service.toLowerCase() === "crown and bridge") return "Crown And Bridge";
       if (service.toLowerCase() === "implant") return "Implant";
       if (service.toLowerCase() === "smile design") return "Smile Design";
     }
@@ -42,6 +45,7 @@ function extractServiceType(
 
   return null;
 }
+
 
 function extractToothNumbers(text: string): number[] {
   const regex = /Tooth Numbers:\s*([0-9,\s]+)/i;

@@ -2,10 +2,11 @@ import React from "react";
 
 interface ResultProps {
   folderFiles: string[] | null;
+  folderName: string | null;
   pdfData: any;
 }
 
-const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
+const Result: React.FC<ResultProps> = ({ folderFiles, pdfData , folderName }) => {
   // ========== Basic Guards ==========
   if (!pdfData || Object.keys(pdfData).length === 0) {
     return (
@@ -44,6 +45,12 @@ const Result: React.FC<ResultProps> = ({ folderFiles, pdfData }) => {
         <p>Invalid fields: {invalidFields}</p>
       </div>
     );
+  }
+
+  if(folderName !== pdfData.file_Prefix){
+    return (<div>
+      <p className="text-red-500">Invalid check!! Please upload same case pdf and files</p>
+    </div>)
   }
 
   // ========== Helpers ==========

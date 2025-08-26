@@ -3,6 +3,8 @@ import React from "react";
 interface FolderViewerProps {
   folderFiles: string[] | null;
   setFolderFiles: (files: string[] | null) => void;
+  folderName: string | null;
+  setFolderName: (name: string | null) => void;
   error: string | null;
   setError: (err: string | null) => void;
   onReset: () => void;
@@ -11,6 +13,8 @@ interface FolderViewerProps {
 const FolderViewer: React.FC<FolderViewerProps> = ({
   folderFiles,
   setFolderFiles,
+  folderName,
+  setFolderName,
   error,
   setError,
   onReset,
@@ -62,6 +66,7 @@ const FolderViewer: React.FC<FolderViewerProps> = ({
             const file = await getFile(entry as FileSystemFileEntry);
             files.push(file.name);
           } else if (entry.isDirectory) {
+            setFolderName(entry.name); // 👈 capture folder name
             await readEntries(entry as FileSystemDirectoryEntry, files, "");
           }
         }
@@ -100,7 +105,9 @@ const FolderViewer: React.FC<FolderViewerProps> = ({
           >
             Reset
           </button>
-          <h3 className="font-semibold mb-2">Files in Folder:</h3>
+          <h3 className="font-semibold mb-2">
+            Folder: {folderName ?? "Unknown"}
+          </h3>
           <ul className="list-disc list-inside text-sm">
             {folderFiles.map((file, idx) => (
               <li key={idx}>{file}</li>

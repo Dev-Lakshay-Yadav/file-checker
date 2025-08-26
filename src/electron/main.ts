@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
-import { openFolder as folderService } from "./services/fileService.js";
+import { openFolder } from "./services/fileService.js";
 import { extractPdfText, processPdfText } from "./services/pdfService.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -47,10 +47,15 @@ app.on("ready", () => {
 
   ipcMain.handle("open-folder", async () => {
     try {
-      const result = await folderService();
+      const result = await openFolder(); // assuming your service is named openFolder
       if (!result)
         return { success: false, error: "Folder selection canceled" };
-      return { success: true, folder: result.path, files: result.files };
+      return {
+        success: true,
+        folder: result.path,
+        folderName: result.name,
+        files: result.files,
+      };
     } catch (error) {
       return {
         success: false,
@@ -58,4 +63,5 @@ app.on("ready", () => {
       };
     }
   });
+  
 });

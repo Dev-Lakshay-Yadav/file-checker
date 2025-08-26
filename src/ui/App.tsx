@@ -15,7 +15,12 @@ declare global {
   interface Window {
     electronAPI: {
       helloWorld: () => Promise<string>;
-      openFolder: () => Promise<string[]>;
+      openFolder: () => Promise<{
+        success: boolean;
+        folder: string;
+        folderName: string;
+        files: string[];
+      }>;
       extractPdfText: (
         fileData: Uint8Array
       ) => Promise<PDFResult | { error: string }>;
@@ -30,21 +35,20 @@ const App: React.FC = () => {
   const [pdfData, setPdfData] = useState<PDFResult | null>(null);
   const [fileName, setFileName] = useState("");
   const [folderFiles, setFolderFiles] = useState<string[] | null>(null);
+  const [folderName, setFolderName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFileName(file.name);
-      setError(null); // reset any previous error
-      setPdfData(null); // clear previous PDF data
+      setError(null);
+      setPdfData(null);
 
       try {
-        // Step 1: Read file completely
         const arrayBuffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
 
-        // Step 2: Only after full read, call backend
         const result = await window.electronAPI.extractPdfText(uint8Array);
 
         if ("error" in result) {
@@ -60,6 +64,7 @@ const App: React.FC = () => {
 
   const resetFolder = () => {
     setFolderFiles(null);
+    setFolderName(null);
     setError(null);
   };
 
@@ -77,13 +82,15 @@ const App: React.FC = () => {
         <FolderViewer
           folderFiles={folderFiles}
           setFolderFiles={setFolderFiles}
+          folderName={folderName}
+          setFolderName={setFolderName}
           error={error}
           setError={setError}
           onReset={resetFolder}
         />
       </div>
       <div className="w-full h-full">
-        <Result folderFiles={folderFiles} pdfData={pdfData} />
+        <Result folderFiles={folderFiles} pdfData={pdfData} folderName={folderName} />
       </div>
     </div>
   );
